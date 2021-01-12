@@ -100,7 +100,7 @@ result = [self.trans_result(x) for x in self.cursor.fetchmany(30)]
 
 
 
-##第二部分——功能实现与性能分析
+# 第三部分——功能实现与性能分析
 
 ###功能实现与性能分析
 
@@ -277,7 +277,7 @@ result = [self.trans_result(x) for x in self.cursor.fetchmany(30)]
 
 
 
-##第三部分——版本控制
+# 第四部分——版本控制
 
 ###git版本控制
 
