@@ -17,7 +17,6 @@ class SearchManager():
         connection = engine.raw_connection()
         self.conn = engine.connect()
         self.session = sessionmaker(bind=engine)()
-        self.cursor = connection.cursor()
 
     def search(self, store_id: str, page_id: int, search_info: dict) -> (int, str, list):
         try:
@@ -46,7 +45,7 @@ class SearchManager():
                 predicate.append(self.get_like_predicate('publisher', publishers, pre_dict))
             if len(tags) != 0:
                 sql += ",book_tag"
-                predicate.append(self.get_tag_predicate('tags', tags, pre_dict))
+                predicate.append(self.get_tag_predicate( tags, pre_dict))
 
             while None in predicate:
                 predicate.remove(None)
@@ -56,18 +55,21 @@ class SearchManager():
                     pre = 'pre_' + str(len(pre_dict))
                     sql += 'book_info.store_id = %({})s and '.format(pre)
                     pre_dict[pre] = store_id
-                sql += ' and '.join(predicate) + ";"
+                sql += ' and '.join(predicate)
             else:
                 if store_id is not None:
                     pre = 'pre_' + str(len(pre_dict))
                     sql += ' where book_info.store_id = %({})s'.format(pre)
                     pre_dict[pre] = store_id
-                sql += ";"
+            
+            sql += " limit 30 offset {};".format(page_id * 30)
 
-            self.cursor.execute(sql, pre_dict)
-            self.cursor.scroll(page_id * 30)
+            ret = self.conn.execute(sql, pre_dict)
 
-            result = [self.trans_result(x) for x in self.cursor.fetchmany(30)]
+            result = [self.trans_result(x) for x in ret.fetchall()]
+
+            if len(result) == 0:
+                return 531, "{}".format("page id not exists."), []
 
             for book in result:
                 pictures = []
@@ -81,7 +83,6 @@ class SearchManager():
                 book['pictures'] = pictures
                 book['tags'] = tags
 
-            self.cursor.close()
         except psycopg2.ProgrammingError as e:
             return 531, "{}".format("page id not exists."), []
         except BaseException as e:
@@ -106,7 +107,7 @@ class SearchManager():
             pre_dict[pre] = kw
         return '(' + ' or '.join(ans) + ')'
 
-    def get_tag_predicate(self, attribute, keywords, pre_dict):
+    def get_tag_predicate(self, keywords, pre_dict):
         ans = []
         for kw in keywords:
             cnt = len(pre_dict)

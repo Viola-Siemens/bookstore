@@ -11,18 +11,21 @@ import datetime
 engine = create_engine('postgresql://root:123456@localhost:5432/bookstore')
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'user'
-    user_id = Column(String,primary_key=True)
+    user_id = Column(String, primary_key=True)
     password = Column(String, nullable=False)
     balance = Column(Integer, nullable=False)
     token = Column(String, nullable=False)
     terminal = Column(String, nullable=False)
 
+
 class Store(Base):
     __tablename__ = 'store'
     store_id = Column(String,nullable=False,primary_key=True)
     owner = Column(String, ForeignKey('user.user_id'), nullable=False, index=True)
+
 
 class Book_info(Base):
     __tablename__ = 'book_info'
@@ -78,6 +81,7 @@ class Order(Base):
     store_id = Column(String, ForeignKey('store.store_id'), nullable=False)
     pt = Column(DateTime, nullable=False)
 
+
 # 订单详情
 class Order_info(Base):
     __tablename__ = 'order_info'
@@ -97,6 +101,7 @@ class Book_pic(Base):
     pic_id = Column(Integer, primary_key=True, autoincrement=True)
     ForeignKeyConstraint(['store_id', 'book_id'], ['book_info.store_id', 'book_info.id'])
     picture = Column(LargeBinary,nullable=False)
+
 
 def run_clear():
     DBSession = sessionmaker(bind=engine)

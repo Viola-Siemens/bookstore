@@ -119,7 +119,7 @@ class UserManager():
             return 530, "{}".format(str(e)), ""
         return 200, "ok", token
 
-    def logout(self, user_id: str, token: str) -> (int,str):
+    def logout(self, user_id: str, token: str) -> (int, str):
         try:
             code, message = self.check_token(user_id, token)
             if code != 200:
